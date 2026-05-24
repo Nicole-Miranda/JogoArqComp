@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+
+<title>Caça Palavras</title>
+
+<style>
+
+.tabuleiro{
+  display: grid;
+  grid-template-columns: repeat(15, 30px);
+  gap: 2px;
+}
+
+.letra{
+  width: 30px;
+  height: 30px;
+  border: 1px solid black;
+  text-align: center;
+  line-height: 30px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.container{
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 50px;
+}
+
+.imagem{
+
+  width: 500px;
+
+  height: 500px;
+
+  background-image: url(Margot.jpeg);
+
+  background-size: contain;
+
+  background-repeat: no-repeat;
+
+  background-position: center;
+}
+
+
+
+.letra.selecionando { background-color: yellow; }
+.letra.encontrada   { background-color: lightgreen; }
+
+</style>
+</head>
+
+<body>
+
+<h2>Caça Palavras - Arquitetura Computacional - Margot</h2>
+
+<div class="container">
+
+  <div class="tabuleiro"></div>
+
+  <div class="imagem"></div>
+
+</div>
+
+<div class="tabuleiro"></div>
+
+<script>
+
+const palavras = [
+  "CPU",
+  "ULA",
+  "RAM",
+  "ROM",
+  "FLASH",
+  "DMA"
+];
+
+const tamanho = 15;
+
+let matriz = [];
+
+
+for(let i = 0; i < tamanho; i++){
+
+  matriz[i] = [];
+
+  for(let j = 0; j < tamanho; j++){
+    matriz[i][j] = "";
+  }
+}
+
+
+for(let p = 0; p < palavras.length; p++){
+
+  let palavra = palavras[p];
+
+  for(let i = 0; i < palavra.length; i++){
+
+    matriz[p][i] = palavra[i];
+  }
+}
+
+
+let letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+for(let i = 0; i < tamanho; i++){
+
+  for(let j = 0; j < tamanho; j++){
+
+    if(matriz[i][j] == ""){
+
+      matriz[i][j] =
+      letras[Math.floor(Math.random() * letras.length)];
+    }
+  }
+}
+
+
+let tabuleiro = document.querySelector(".tabuleiro");
+
+
+let selecionando = false;
+let inicio = null;
+
+for(let i = 0; i < tamanho; i++){
+
+  for(let j = 0; j < tamanho; j++){
+
+    // createElement no lugar de innerHTML para poder adicionar eventos
+    let div = document.createElement("div");
+    div.classList.add("letra");
+    div.textContent = matriz[i][j];
+    div.dataset.l = i;
+    div.dataset.c = j;
+
+    
+    div.addEventListener("mousedown", function() {
+      selecionando = true;
+      inicio = { l: i, c: j };
+    });
+
+    div.addEventListener("mouseover", function() {
+      if (!selecionando) return;
+
+    
+      let todas = document.querySelectorAll(".selecionando");
+      for (let k = 0; k < todas.length; k++) {
+        todas[k].classList.remove("selecionando");
+      }
+
+      // pinta do início até a célula atual
+      let dl = 0, dc = 0;
+      if (i > inicio.l) dl =  1;
+      if (i < inicio.l) dl = -1;
+      if (j > inicio.c) dc =  1;
+      if (j < inicio.c) dc = -1;
+
+      let l = inicio.l, c = inicio.c;
+      for (let k = 0; k < tamanho; k++) {
+        let cel = document.querySelector('[data-l="' + l + '"][data-c="' + c + '"]');
+        if (cel) cel.classList.add("selecionando");
+        if (l === i && c === j) break;
+        l = l + dl;
+        c = c + dc;
+      }
+    });
+
+    div.addEventListener("mouseup", function() {
+      selecionando = false;
+
+      // monta a palavra selecionada
+      let selecionadas = document.querySelectorAll(".selecionando");
+      let palavraSelecionada = "";
+      for (let k = 0; k < selecionadas.length; k++) {
+        let l = selecionadas[k].dataset.l;
+        let c = selecionadas[k].dataset.c;
+        palavraSelecionada = palavraSelecionada + matriz[l][c];
+      }
+
+      // verifica se é uma das palavras
+      for (let p = 0; p < palavras.length; p++) {
+        if (palavraSelecionada === palavras[p]) {
+          for (let k = 0; k < selecionadas.length; k++) {
+            selecionadas[k].classList.add("encontrada");
+          }
+          break;
+        }
+      }
+
+      // limpa o lelo
+      let todas = document.querySelectorAll(".selecionando");
+      for (let k = 0; k < todas.length; k++) {
+        todas[k].classList.remove("selecionando");
+      }
+
+      inicio = null;
+    });
+
+    tabuleiro.appendChild(div);
+  }
+}
+
+</script>
+
+</body>
+</html>
+
