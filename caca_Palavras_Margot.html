@@ -24,35 +24,22 @@
 }
 
 .container{
-
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 50px;
 }
 
 .imagem{
-
   width: 500px;
-
   height: 500px;
 
   background-image: url(Margot.jpeg);
 
   background-size: contain;
-
   background-repeat: no-repeat;
-
   background-position: center;
 }
-
-
-
-.letra.selecionando { background-color: yellow; }
-.letra.encontrada   { background-color: lightgreen; }
 
 </style>
 </head>
@@ -69,43 +56,94 @@
 
 </div>
 
-<div class="tabuleiro"></div>
-
 <script>
 
-const palavras = [
+let palavras = [
   "CPU",
   "ULA",
   "RAM",
   "ROM",
   "FLASH",
-  "DMA"
+  "DMA",
+  "REGISTRADORES",
+  "MEMORIA",
+  "DATABUS",
+  "QUADCORE"
 ];
 
-const tamanho = 15;
+let tamanho = 15;
 
 let matriz = [];
 
+//matriz sem nada
 
 for(let i = 0; i < tamanho; i++){
 
   matriz[i] = [];
 
   for(let j = 0; j < tamanho; j++){
+
     matriz[i][j] = "";
   }
 }
+
 
 
 for(let p = 0; p < palavras.length; p++){
 
   let palavra = palavras[p];
 
-  for(let i = 0; i < palavra.length; i++){
+  // 0 = horizontal
+  // 1 = vertical
+  let direcao =
+  Math.floor(Math.random() * 2);
 
-    matriz[p][i] = palavra[i];
+  let linha =
+  Math.floor(Math.random() * tamanho);
+
+  let coluna =
+  Math.floor(Math.random() * tamanho);
+
+ 
+  // para ter palavras na horixotal
+  
+
+  if(direcao == 0){
+
+    coluna =
+    Math.floor(
+      Math.random() *
+      (tamanho - palavra.length)
+    );
+
+    for(let i = 0; i < palavra.length; i++){
+
+      matriz[linha][coluna + i] =
+      palavra[i];
+    }
+  }
+
+
+  // para ter palavars na vertical
+  
+
+  else{
+
+    linha =
+    Math.floor(
+      Math.random() *
+      (tamanho - palavra.length)
+    );
+
+    for(let i = 0; i < palavra.length; i++){
+
+      matriz[linha + i][coluna] =
+      palavra[i];
+    }
   }
 }
+
+
 
 
 let letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -117,98 +155,70 @@ for(let i = 0; i < tamanho; i++){
     if(matriz[i][j] == ""){
 
       matriz[i][j] =
-      letras[Math.floor(Math.random() * letras.length)];
+      letras[
+        Math.floor(
+          Math.random() * letras.length
+        )
+      ];
     }
   }
 }
 
 
-let tabuleiro = document.querySelector(".tabuleiro");
+// Esse é o tabuleiro
 
 
-let selecionando = false;
-let inicio = null;
+let tabuleiro =
+document.querySelector(".tabuleiro");
 
 for(let i = 0; i < tamanho; i++){
 
   for(let j = 0; j < tamanho; j++){
 
-    // createElement no lugar de innerHTML para poder adicionar eventos
-    let div = document.createElement("div");
+    let div =
+    document.createElement("div");
+
     div.classList.add("letra");
+
     div.textContent = matriz[i][j];
-    div.dataset.l = i;
-    div.dataset.c = j;
-
-    
-    div.addEventListener("mousedown", function() {
-      selecionando = true;
-      inicio = { l: i, c: j };
-    });
-
-    div.addEventListener("mouseover", function() {
-      if (!selecionando) return;
-
-    
-      let todas = document.querySelectorAll(".selecionando");
-      for (let k = 0; k < todas.length; k++) {
-        todas[k].classList.remove("selecionando");
-      }
-
-      // pinta do início até a célula atual
-      let dl = 0, dc = 0;
-      if (i > inicio.l) dl =  1;
-      if (i < inicio.l) dl = -1;
-      if (j > inicio.c) dc =  1;
-      if (j < inicio.c) dc = -1;
-
-      let l = inicio.l, c = inicio.c;
-      for (let k = 0; k < tamanho; k++) {
-        let cel = document.querySelector('[data-l="' + l + '"][data-c="' + c + '"]');
-        if (cel) cel.classList.add("selecionando");
-        if (l === i && c === j) break;
-        l = l + dl;
-        c = c + dc;
-      }
-    });
-
-    div.addEventListener("mouseup", function() {
-      selecionando = false;
-
-      // monta a palavra selecionada
-      let selecionadas = document.querySelectorAll(".selecionando");
-      let palavraSelecionada = "";
-      for (let k = 0; k < selecionadas.length; k++) {
-        let l = selecionadas[k].dataset.l;
-        let c = selecionadas[k].dataset.c;
-        palavraSelecionada = palavraSelecionada + matriz[l][c];
-      }
-
-      // verifica se é uma das palavras
-      for (let p = 0; p < palavras.length; p++) {
-        if (palavraSelecionada === palavras[p]) {
-          for (let k = 0; k < selecionadas.length; k++) {
-            selecionadas[k].classList.add("encontrada");
-          }
-          break;
-        }
-      }
-
-      // limpa o lelo
-      let todas = document.querySelectorAll(".selecionando");
-      for (let k = 0; k < todas.length; k++) {
-        todas[k].classList.remove("selecionando");
-      }
-
-      inicio = null;
-    });
 
     tabuleiro.appendChild(div);
   }
 }
 
+
+// Mouse funcionando
+
+
+let selecionando = false;
+
+tabuleiro.addEventListener("mousedown", function(e){
+
+  if(e.target.classList.contains("letra")){
+
+    selecionando = true;
+
+    e.target.style.background = "yellow";
+  }
+});
+
+tabuleiro.addEventListener("mouseover", function(e){
+
+  if(
+    selecionando &&
+    e.target.classList.contains("letra")
+  ){
+
+    e.target.style.background = "yellow";
+  }
+});
+
+document.addEventListener("mouseup", function(){
+
+  selecionando = false;
+});
+
 </script>
 
 </body>
 </html>
-
